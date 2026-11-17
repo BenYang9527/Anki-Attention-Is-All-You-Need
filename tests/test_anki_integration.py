@@ -15,6 +15,7 @@ except ImportError:  # normal developer Python does not include Anki
     Collection = None
 
 sys.path.insert(0, str(Path(__file__).parents[1] / "addon"))
+import attention_dashboard as dashboard
 import dashboard_actions
 from data import AnkiData
 
@@ -130,6 +131,115 @@ class IsolatedAnkiCollectionTest(unittest.TestCase):
                 self.assertEqual(stored['Back Extra'], extra)
             finally:
                 col.close()
+
+    def test_subdeck_preset_groups_simulate_separately(self):
+        # P1 回归（真实集合）：子牌组换过预设后，选父牌组时必须按预设
+        # 分组模拟——config_dict_for_deck_id 按牌组返回各自预设，父牌组
+        # 的搜索虽然覆盖子树卡片，参数却不能整棵子树共用。
+        with tempfile.TemporaryDirectory(prefix="attention-anki-") as folder:
+            col = Collection(str(Path(folder) / "collection.anki2"))
+            try:
+                model = col.models.by_name("Basic")
+                parent_id = col.decks.id("学习")
+                child_id = col.decks.id("学习::英语")
+                for deck_id, front in ((parent_id, "p"), (child_id, "c")):
+                    note = col.new_note(model)
+                    note["Front"] = front
+                    note["Back"] = "a"
+                    col.add_note(note, deck_id)
+
+                child_preset = col.decks.add_config_returning_id("子预设")
+                conf = col.decks.get_config(child_preset)
+                conf["desiredRetention"] = 0.95
+                conf["easyDaysPercentages"] = [1, 1, 1, 1, 1, 0, 0]
+                col.decks.update_config(conf)
+                deck = col.decks.get(child_id)
+                deck["conf"] = child_preset
+                col.decks.save(deck)
+
+                data = AnkiData(col, {})
+                groups = data.simulation_groups("学习", [])
+                self.assertEqual(
+                    [group["decks"] for group in groups], [["学习"], ["学习::英语"]]
+                )
+                parent, child = groups
+                self.assertEqual(parent["config"]["id"], col.decks.config_dict_for_deck_id(parent_id)["id"])
+                self.assertEqual(child["config"]["id"], child_preset)
+                self.assertEqual(child["config"]["desiredRetention"], 0.95)
+                self.assertEqual(child["easyDays"], [1, 1, 1, 1, 1, 0, 0])
+                # 组内搜索互不重叠、合起来覆盖子树：父组 1 张、子组 1 张。
+                import fsrs_adapter
+                for card_id, deck_of_card in col.db.all("select id, did from cards"):
+                    if deck_of_card in (parent_id, child_id):
+                        col.db.execute(
+                            "update cards set queue=2, type=2, ivl=10 where id=?",
+                            card_id,
+                        )
+                for group, expected in ((parent, 1), (child, 1)):
+                    search = fsrs_adapter.group_search(group["decks"])
+                    self.assertEqual(len(col.find_cards(search)), expected)
+                self.assertEqual(len(col.find_cards('deck:"学习"')), 2)  # 子树合计
+                # 两个组都能跑真实 FSRS 模拟。
+                for group in groups:
+                    result = data.simulate_group(group, additional_new=0, days=30, new_limit=0)
+                    self.assertEqual(len(result["dailyTimeCost"]), 30)
+            finally:
+                col.close()
+
+    def test_new_space_invariant_to_group_order(self):
+        # 复审 P2 回归（真实集合复现）：一个预设复习上限 0（适配器
+        # new_cards_ignore_review_limit=False，实测模拟实际引入 0 张新
+        # 卡）、另一个 9999。展示数量曾取第一组模拟的引入量——组按名称
+        # 排序，牌组改名交换组序就会改变“新增空间”。现在数量与成本
+        # 同源：都按“全部新增集中在最贵预设组”的分配策略。
+        def scenario(slow_name, normal_name):
+            with tempfile.TemporaryDirectory(prefix="attention-anki-") as folder:
+                col = Collection(str(Path(folder) / "collection.anki2"))
+                try:
+                    model = col.models.by_name("Basic")
+                    for name, per_day in ((slow_name, 0), (normal_name, 9999)):
+                        deck_id = col.decks.id(name)
+                        preset = col.decks.add_config_returning_id(f"预设-{name}")
+                        conf = col.decks.get_config(preset)
+                        conf.setdefault("rev", {})["perDay"] = per_day
+                        col.decks.update_config(conf)
+                        deck = col.decks.get(deck_id)
+                        deck["conf"] = preset
+                        col.decks.save(deck)
+                        note = col.new_note(model)
+                        note["Front"], note["Back"] = "q", "a"
+                        col.add_note(note, deck_id)
+                    for card_id, did in col.db.all("select id, did from cards"):
+                        col.db.execute(
+                            "update cards set queue=2, type=2, ivl=10 where id=?",
+                            card_id,
+                        )
+                    data = AnkiData(col, {"managedDecks": [slow_name, normal_name]})
+                    groups = data.simulation_groups("", [slow_name, normal_name])
+                    baseline = [
+                        data.simulate_group(group, additional_new=0, days=90, new_limit=0)
+                        for group in groups
+                    ]
+                    plan = dashboard.new_card_capacity(groups, baseline, 90, 300, data)
+                    slow = next(
+                        group for group in groups
+                        if group["config"].get("rev", {}).get("perDay") == 0
+                    )
+                    slow_introduced = sum(
+                        data.simulate_group(slow, additional_new=90, days=90, new_limit=1)
+                        ["dailyNewCount"]
+                    )
+                    return {"plan": plan, "slowIntroduced": slow_introduced}
+                finally:
+                    col.close()
+
+        first = scenario("甲", "乙")
+        second = scenario("乙", "甲")  # 交换哪个预设复习上限为 0 → 组序颠倒
+        # 前提与复审一致：复习上限 0 的组，模拟实际引入 0 张新卡。
+        self.assertEqual(first["slowIntroduced"], 0)
+        self.assertEqual(second["slowIntroduced"], 0)
+        for field in ("state", "dailyPace", "weeklyNew", "worstWindowDailyMinutes"):
+            self.assertEqual(first["plan"][field], second["plan"][field], field)
 
 
 if __name__ == "__main__":

@@ -42,9 +42,24 @@ def fsrs_params(config: dict[str, Any]) -> list[float]:
     return list(params)
 
 
+def group_search(decks: list[str]) -> str:
+    """预设组的模拟搜索：每个牌组只匹配自己的卡片，组间互不重叠。
+
+    ``deck:"X"`` 会连子牌组一起匹配；两个预设组的搜索若都用子树形式，
+    父组的搜索会把子组的卡片再算一遍。这里对组内每个牌组使用精确形式
+    ``deck:"X" -deck:"X::*"``（已实测核对），保证按预设分组的模拟互不
+    重复、合起来覆盖范围内全部卡片。
+    """
+    terms = [
+        f'(deck:"{_escape_deck(deck)}" -deck:"{_escape_deck(deck)}::*")'
+        for deck in decks
+    ]
+    return f'({" or ".join(terms)}) -is:suspended -is:new'
+
+
 def build_request_params(
     config: dict[str, Any],
-    deck: str,
+    decks: list[str],
     additional_new: int,
     days: int,
     new_limit: int,
@@ -54,6 +69,7 @@ def build_request_params(
     Pure: no Anki imports, no collection access. This isolates the part of the
     FSRS request that is easy to get wrong (defaults, clamping, the optional
     suspend-after-lapse knob) so it can be tested without a live collection.
+    ``decks`` 是同一预设组内的牌组列表，共用这份配置。
     """
     params = {
         "params": fsrs_params(config),
@@ -63,7 +79,7 @@ def build_request_params(
         "new_limit": max(0, int(new_limit)),
         "review_limit": int(config.get("rev", {}).get("perDay", 9999)),
         "max_interval": int(config.get("rev", {}).get("maxIvl", 36500)),
-        "search": f'deck:"{_escape_deck(deck)}" -is:suspended -is:new',
+        "search": group_search(decks),
         "new_cards_ignore_review_limit": False,
         "easy_days_percentages": config.get("easyDaysPercentages") or [1.0] * 7,
         "review_order": int(config.get("reviewOrder", 0)),
@@ -93,12 +109,12 @@ def _new_request(params: dict[str, Any]):
 def simulate(
     collection,
     config: dict[str, Any],
-    deck: str,
+    decks: list[str],
     additional_new: int,
     days: int,
     new_limit: int,
 ) -> dict[str, Any]:
-    """Run the FSRS simulation for one deck.
+    """Run the FSRS simulation for one preset group.
 
     Degrades to a ``RuntimeError`` (caught by the dashboard, which then falls
     back to the schedule-estimate path) whenever the installed Anki version no
@@ -110,11 +126,14 @@ def simulate(
     runner = getattr(backend, "simulate_fsrs_review", None)
     if runner is None:
         raise RuntimeError("当前 Anki 版本未暴露 FSRS 模拟接口，已降级为排程估算。")
+    label = "、".join(decks[:3]) + ("…" if len(decks) > 3 else "")
     try:
         request = _new_request(
-            build_request_params(config, deck, additional_new, days, new_limit)
+            build_request_params(config, decks, additional_new, days, new_limit)
         )
-    except (ImportError, AttributeError, TypeError) as exc:
+    except (ImportError, AttributeError, TypeError, ValueError) as exc:
+        # ValueError covers protobuf range errors (e.g. absurd simulationDays),
+        # so even a bad config degrades instead of crashing the dashboard.
         raise RuntimeError(
             f"FSRS 模拟接口不可用，已降级为排程估算：{exc}"
         ) from exc
@@ -131,7 +150,7 @@ def simulate(
                 "dailyTimeCost": [0.0] * horizon,
             }
         raise RuntimeError(
-            f"牌组 {deck} 的 FSRS 模拟失败，已降级为排程估算：{exc}"
+            f"牌组 {label} 的 FSRS 模拟失败，已降级为排程估算：{exc}"
         ) from exc
     return {
         "dailyReviewCount": list(result.daily_review_count),

@@ -9,19 +9,85 @@
 *{box-sizing:border-box}body{margin:0;background:linear-gradient(180deg,#fff 0,#fdfdff 650px);color:var(--ink);font:14px/1.55 -apple-system,BlinkMacSystemFont,"PingFang SC","Segoe UI",sans-serif}button,input,select,textarea{font:inherit}button{cursor:pointer;color:inherit}button:disabled{cursor:default;opacity:.5}[hidden]{display:none!important}h1,h2,h3,p{margin:0}h1{font-size:32px;letter-spacing:-.7px}h2{font-size:20px}small,.muted{color:var(--muted)}button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:3px solid #a389ee;outline-offset:3px}
 .app{max-width:1120px;margin:auto;padding:0 36px 60px}.app-header{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:22px 0;border-bottom:1px solid var(--line)}.wordmark{display:flex;align-items:center;gap:10px}.mark{display:grid;place-items:center;width:32px;height:32px;border-radius:10px;color:#fff;font:italic 27px Georgia,serif;background:radial-gradient(ellipse at 0 0,#edaef0,transparent 68%),linear-gradient(145deg,#ab9efc,#6635ef 68%,#4a26d5)}.brand{font-size:16px;font-weight:650}.header-nav{display:flex;gap:22px}.header-nav button{padding:6px 0;background:none;border:0;border-bottom:2px solid transparent;color:var(--muted)}.header-nav button.active{border-color:var(--purple);color:var(--ink);font-weight:600}
 .scope-row{display:flex;align-items:center;justify-content:space-between;gap:16px;margin:26px 0 22px}.settings{display:flex;gap:12px;align-items:center;flex-wrap:wrap}.settings label{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:7px}.settings select,.settings input{background:var(--paper);color:var(--ink);border:1px solid var(--line);border-radius:9px;padding:8px;min-height:36px}.settings select{max-width:190px}.settings input{width:64px;text-align:center}.btn{border:1px solid var(--line);background:var(--paper);padding:9px 14px;border-radius:10px;white-space:nowrap}.btn:hover{background:#f8f7fc}.btn.primary{background:linear-gradient(115deg,#6938f5,#6130eb);border-color:#6633ee;color:#fff}.btn.quiet{border-color:transparent;background:transparent;color:var(--purple)}.btn.danger{color:var(--danger)}.loading,.empty,.error{padding:34px 18px;text-align:center;border:1px dashed var(--line);border-radius:12px;color:var(--muted)}.error{color:var(--danger);background:#fff5f6;border-color:#f0cdd2}
-.briefing{display:grid;grid-template-columns:1.03fr 1fr;background:var(--paper);border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow);overflow:hidden}.budget-ticket{min-height:285px;padding:30px;background:radial-gradient(ellipse at -8% 110%,#9990ffaf 0,#b7adff42 28%,transparent 59%),radial-gradient(ellipse at 104% 110%,#f7bce999 0,#fce3ef65 30%,transparent 60%),linear-gradient(128deg,#efedfc,#faf9ff 48%,#fff8fc)}.kicker{text-transform:uppercase;letter-spacing:1px;font-size:11px;color:#4b465e}.big-amount{display:flex;align-items:baseline;gap:9px;margin:19px 0 22px}.big-amount b{font:650 76px/.97 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;letter-spacing:-4px}.ticket-bottom{display:flex;gap:38px;padding-top:15px;border-top:1px solid #65537b20}.ticket-bottom small{display:block}.ticket-bottom strong{font-size:19px}.recommendation{padding:30px;display:flex;flex-direction:column;align-items:flex-start;justify-content:center}.recommendation h2{font-size:26px;line-height:1.35;margin:10px 0}.recommendation p{color:var(--muted);max-width:330px}.recommendation .btn{margin-top:22px}.today-line{display:flex;justify-content:space-between;gap:15px;flex-wrap:wrap;padding:14px 2px;color:var(--muted);font-size:12px}
+.hero{display:grid;grid-template-columns:1.35fr .65fr;background:radial-gradient(ellipse at -8% 112%,#a78cff59,transparent 34%),radial-gradient(ellipse at 74% -14%,#ffe8f3,transparent 40%),var(--paper);border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow);overflow:hidden}
+.kicker{text-transform:uppercase;letter-spacing:1px;font-size:11px;color:#4b465e}
+.hero-main{display:flex;flex-direction:column;gap:13px;padding:26px 30px 30px}
+.hero-kicker{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.state-tag{display:inline-flex;align-items:center;padding:3px 10px;border-radius:99px;background:var(--soft);color:var(--purple);font-size:11px;font-weight:600;letter-spacing:.2px}
+.hero-title{font-size:29px;line-height:1.24;letter-spacing:-.7px;max-width:640px}
+.hero-numbers{color:var(--muted)}
+.hero-detail{color:var(--muted);max-width:580px}
+.hero-actions{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-top:15px}
+.hero-side{display:flex;flex-direction:column;padding:22px 24px 18px;border-left:1px solid var(--line);background:#ffffffa6}
+.hero-side h3{font-size:14px;font-weight:600}
+.ledger-row{display:flex;flex-direction:column;gap:2px;padding:9px 0;border-top:1px solid var(--line)}
+.ledger-row:first-of-type{border-top:0}
+.ledger-row small{color:var(--muted);font-size:11px}
+.ledger-row b{font-size:21px;letter-spacing:-.3px}
+.ledger-row em{font-style:normal;color:var(--purple);font-size:11px}
+.ratio-pair{display:grid;gap:9px;max-width:560px}
+.bar-row{display:grid;grid-template-columns:88px minmax(0,1fr) 54px;align-items:center;gap:12px;font-size:12px;color:var(--muted)}
+button.bar-row{border:0;background:none;padding:3px 4px;margin:-3px -4px;text-align:left;cursor:pointer;border-radius:8px}
+button.bar-row:hover{background:#f6f1fd}
+.track{height:10px;background:#ece8f4;border-radius:99px;overflow:hidden}
+.fill{height:100%;border-radius:inherit}
+.fill.cards-fill{background:linear-gradient(90deg,#9c72ff,#7440ee)}
+.fill.time-fill{background:linear-gradient(90deg,#ff9c8a,#ff4f8b)}
+.bar-row strong{text-align:right;font-size:13px;color:var(--ink)}
+.today-line{display:flex;justify-content:space-between;gap:15px;flex-wrap:wrap;padding:14px 2px;color:var(--muted);font-size:12px}
 .section-head{display:flex;justify-content:space-between;align-items:center;gap:16px;margin:30px 0 14px}.card-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}.candidate{border:1px solid var(--line);border-radius:17px;background:var(--paper);text-align:left;padding:0;overflow:hidden;box-shadow:0 5px 15px #34244b07}.candidate:hover{border-color:#cbbced;transform:translateY(-2px)}.tile-art{height:112px;display:flex;align-items:center;justify-content:center;background:linear-gradient(150deg,#fafaff,#fff 76%);border-bottom:1px solid #f0eef5;overflow:hidden}.tile-art img{max-width:100%;max-height:100%;object-fit:contain}.tile-art.text-preview{align-items:stretch;justify-content:stretch;padding:12px;background:linear-gradient(130deg,#ff3f7f14,transparent 45%),linear-gradient(35deg,#7b3ff217,transparent 55%),#fffdfc}.text-cover{display:grid;align-content:space-between;gap:8px;width:100%;padding:11px;border:1px solid #775aa821;border-radius:12px;background:#ffffffbf;box-shadow:inset 0 1px 0 #fff,0 14px 28px #382a5912}.text-cover strong{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;font-size:13px;line-height:1.35}.text-cover small{color:#837b91;font-size:10px;font-weight:650}.fallback-cover{position:relative;isolation:isolate;background:radial-gradient(circle at 28% 22%,#ff3f7f2e,transparent 30%),radial-gradient(circle at 72% 62%,#7b3ff229,transparent 34%),linear-gradient(145deg,#fffefd 0%,#faf5ff 58%,#fff9fb 100%)}.fallback-cover:before{content:"";position:absolute;inset:0;opacity:.22;background-image:linear-gradient(#56437829 1px,transparent 1px),linear-gradient(90deg,#5643781f 1px,transparent 1px);background-size:18px 18px;mask-image:linear-gradient(135deg,transparent 0%,#000 22%,#000 70%,transparent 100%)}.fallback-cover:after{content:"";position:absolute;inset:0;background-image:radial-gradient(circle,#2e234d1f 1px,transparent 1px);background-size:13px 13px;opacity:.18;mix-blend-mode:multiply}.stack-symbol{position:relative;z-index:1;width:92px;height:76px}.stack-symbol i{position:absolute;width:66px;height:48px;border-radius:13px;border:1.5px solid #51349757;background:#ffffff7a;box-shadow:0 14px 34px #5b37a01f}.stack-symbol i:nth-child(1){left:4px;top:18px;transform:rotate(-9deg)}.stack-symbol i:nth-child(2){left:18px;top:10px;transform:rotate(4deg);border-color:#ff3f7f6b}.stack-symbol i:nth-child(3){left:28px;top:22px;border-color:#7b3ff280;background:linear-gradient(135deg,#ffffffc2,#ffffff4d)}.detail-cover{height:156px;border-bottom:1px solid var(--line)}.tile-body{padding:16px}.tile-body h3{height:67px;overflow:hidden;font-size:14px}.reason{color:#746580;font-size:12px;min-height:38px}.tile-meta{display:flex;justify-content:space-between;align-items:baseline;margin-top:10px;padding-top:10px;border-top:1px solid var(--line)}.tile-meta strong{font-size:18px}
 .inspection-heading{position:sticky;top:0;z-index:20;display:flex;justify-content:space-between;align-items:center;gap:16px;margin:0 0 12px;padding:12px 0;background:#fdfdfff2;backdrop-filter:blur(12px)}.filter-group,.signal-options{display:flex;gap:4px;flex-wrap:wrap}.filter-group button,.signal-options button{border:0;background:transparent;color:var(--muted);font-size:12px;padding:7px 11px;border-radius:7px}.filter-group button.active,.signal-options button.active{background:var(--paper);box-shadow:0 1px 4px #3c2c5010;color:#5129be}.filter-group{background:#f2eff8;padding:4px;border-radius:10px}.filter-count{font-size:11px;color:var(--muted);white-space:nowrap}.inspection{display:grid;grid-template-columns:255px minmax(0,1fr);gap:30px;align-items:start}.inspection.collapsed{grid-template-columns:1fr;max-width:870px;margin:auto}.inspection-list{position:sticky;top:72px;max-height:calc(100vh - 92px);overflow-y:auto;padding-right:5px;background:transparent;scrollbar-width:thin}.mini-card{display:block;width:100%;padding:15px;margin-bottom:5px;border:0;border-radius:12px;background:transparent;text-align:left}.mini-card h3{font-size:13px;font-weight:400;color:#71697b;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}.mini-card.selected{background:var(--soft);box-shadow:inset 3px 0 #9275e6}.mini-card.selected h3{font-weight:600;color:#33263f}.mini-meta{font-size:11px;color:var(--muted);margin-top:8px}.workspace{position:relative}.list-toggle{display:flex;align-items:center;gap:5px;margin:0 0 8px;border:0;background:transparent;color:var(--purple);padding:5px}.detail-shell{display:grid;grid-template-columns:44px minmax(0,1fr) 44px;gap:10px;align-items:stretch}.nav-rail{position:relative}.nav-arrow{position:sticky;top:50vh;display:grid;place-items:center;width:42px;height:42px;transform:translateY(-50%);border:1px solid #e6def0;border-radius:50%;background:#ffffffdb;color:var(--purple);opacity:.58}.nav-arrow:hover,.nav-arrow:focus-visible{opacity:1;background:linear-gradient(135deg,#fff,#f2e9ff)}.detail{min-width:0;background:var(--paper);border:1px solid var(--line);border-radius:18px;overflow:hidden;box-shadow:0 7px 22px #39265108}.detail-head,.detail-body,.detail-actions{padding:19px 24px}.detail-head{display:flex;justify-content:space-between;gap:12px;border-bottom:1px solid var(--line)}.pill{display:inline-flex;margin:2px;padding:3px 7px;border-radius:5px;font-size:11px;background:#f4f2f7;color:#625a70}.detail-fallback-title{margin:14px 0 10px;font-size:18px;line-height:1.38}.rendered-card{width:100%;min-height:150px;border:0}.answer{margin-top:18px;padding-top:18px;border-top:1px solid var(--line)}.answer summary{color:var(--purple);cursor:pointer}.evidence{display:flex;gap:22px;flex-wrap:wrap;padding:16px 24px;background:#faf9fc;border-top:1px solid var(--line)}.evidence strong{display:block}.review-events{font-size:12px;line-height:1.7}.detail-actions{display:flex;align-items:center;gap:12px;border-top:1px solid var(--line)}.process-menu{position:relative}.process-menu>summary{list-style:none}.process-menu>summary::-webkit-details-marker{display:none}.process-popover{position:absolute;left:0;bottom:calc(100% + 8px);z-index:30;width:310px;max-width:calc(100vw - 32px);padding:8px;border:1px solid var(--line);border-radius:16px;background:#fff;box-shadow:0 18px 45px #31204420}.menu-heading{padding:7px 10px 3px;color:var(--muted);font-size:10px;letter-spacing:.7px}.menu-action{display:block;width:100%;padding:9px 10px;border:0;border-radius:9px;background:transparent;text-align:left}.menu-action:hover{background:var(--soft)}.menu-action small{display:block;color:var(--muted);font-size:11px}.menu-divider{height:1px;margin:6px;background:var(--line)}
 .editing label{display:block;margin-bottom:15px;color:var(--muted);font-size:12px}.editing textarea,.editing input{display:block;width:100%;margin-top:7px;padding:12px;border:1px solid var(--line);border-radius:7px;resize:vertical}.editing textarea{min-height:100px}.editor-buttons{display:flex;gap:9px}.message{margin-bottom:12px;padding:12px 16px;border-radius:12px;background:#f5f0fc;color:#654c86}.dialog{width:440px;max-width:calc(100vw - 32px);padding:28px;border:1px solid #ede5ed;border-radius:22px;box-shadow:0 24px 80px #271b3633}.dialog::backdrop{background:#21172f40}.dialog p{margin-top:12px;color:var(--muted)}.dialog-actions{display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap;margin-top:22px}.footer-note{margin-top:18px;color:var(--muted);font-size:11px}
-@media(max-width:760px){.app{padding:0 16px 40px}.app-header,.scope-row{align-items:flex-start;flex-wrap:wrap}.briefing{grid-template-columns:1fr}.card-grid{grid-template-columns:1fr}.inspection-heading{align-items:flex-start;flex-wrap:wrap}.inspection{display:block}.inspection-list{position:static;display:flex;max-height:none;overflow:auto;margin-bottom:17px}.mini-card{min-width:210px}.detail-shell{grid-template-columns:1fr 1fr}.detail{grid-column:1/-1;grid-row:2}.nav-rail{position:static;grid-row:1}.nav-rail.next{display:flex;justify-content:flex-end}.nav-arrow{position:static;transform:none}.big-amount b{font-size:68px}}
+@media(max-width:760px){.app{padding:0 16px 40px}.app-header,.scope-row{align-items:flex-start;flex-wrap:wrap}.hero{grid-template-columns:1fr}.hero-side{border-left:0;border-top:1px solid var(--line)}.hero-title{font-size:24px}.card-grid{grid-template-columns:1fr}.inspection-heading{align-items:flex-start;flex-wrap:wrap}.inspection{display:block}.inspection-list{position:static;display:flex;max-height:none;overflow:auto;margin-bottom:17px}.mini-card{min-width:210px}.detail-shell{grid-template-columns:1fr 1fr}.detail{grid-column:1/-1;grid-row:2}.nav-rail{position:static;grid-row:1}.nav-rail.next{display:flex;justify-content:flex-end}.nav-arrow{position:static;transform:none}}
 .inspection-heading{flex-wrap:wrap}.sort-label{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted)}.sort-label select{padding:6px;border:1px solid var(--line);border-radius:7px;background:#fff}
-.inspection.collapsed{max-width:760px}.detail-shell{display:block;margin:0 22px}.nav-rail{position:static}.nav-arrow{position:fixed;z-index:16;transform:none;opacity:0;pointer-events:none;transition:opacity .16s,background .16s}.detail-shell:hover .nav-arrow,.nav-arrow:focus-visible{opacity:1;pointer-events:auto}.nav-arrow:disabled{pointer-events:none}.detail-shell:hover .nav-arrow:disabled{opacity:.28}
+.inspection.collapsed{max-width:760px}.concentration-summary{display:flex;flex-wrap:wrap;gap:10px 28px;align-items:flex-start;justify-content:space-between;margin:0 0 12px;padding:14px 18px;border:1px solid var(--line);border-radius:14px;background:var(--paper)}.summary-main{display:grid;gap:9px;min-width:min(100%,300px)}.summary-line{font-size:15px;font-weight:600;letter-spacing:-.2px}.summary-scope{color:var(--muted);font-size:11px}.concentration-summary .ratio-pair{max-width:420px;margin:0}.info-wrap{position:relative;display:inline-flex}.info-trigger{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border:0;border-radius:99px;background:transparent;color:var(--muted);font-size:12px;white-space:nowrap}.info-trigger:hover,.info-trigger:focus-visible,.info-trigger[aria-expanded="true"]{background:var(--soft);color:var(--purple)}.info-pop{position:absolute;top:calc(100% + 8px);right:0;z-index:38;width:340px;max-width:calc(100vw - 32px);padding:13px 15px;border:1px solid var(--line);border-radius:14px;background:var(--paper);box-shadow:0 18px 45px #31204426}.info-list{margin:0;padding-left:18px;display:grid;gap:6px;font-size:12px;line-height:1.65}.detail-shell{display:block;margin:0 22px}.nav-rail{position:static}.nav-arrow{position:fixed;z-index:16;transform:none;opacity:0;pointer-events:none;transition:opacity .16s,background .16s}.detail-shell:hover .nav-arrow,.nav-arrow:focus-visible{opacity:1;pointer-events:auto}.nav-arrow:disabled{pointer-events:none}.detail-shell:hover .nav-arrow:disabled{opacity:.28}
 .list-toggle{width:28px;height:28px;padding:4px}.action-icon{width:19px;height:19px;flex:none}.list-toggle.is-handle{position:fixed;z-index:17;width:22px;height:56px;margin:0;padding:0;border:0;background:transparent}.list-toggle.is-handle::before{content:'';position:absolute;right:3px;top:50%;width:2px;height:28px;border-radius:2px;transform:translateY(-50%);background:#9986ad;transition:height .18s,box-shadow .18s}.list-toggle.is-handle .action-icon{width:14px;height:14px;opacity:0;transform:translateX(3px);transition:opacity .16s,transform .18s}.list-toggle.is-handle:hover::before,.list-toggle.is-handle:focus-visible::before{height:40px;background:linear-gradient(#b495ee,#7951c5,#c78bb9);box-shadow:0 0 10px #a680de40}.list-toggle.is-handle:hover .action-icon,.list-toggle.is-handle:focus-visible .action-icon{opacity:1;transform:none}
 .process-popover{position:fixed;z-index:40;bottom:auto;max-height:calc(100vh - 24px);overflow:auto}.menu-action{display:flex;align-items:flex-start;gap:10px}.menu-action .action-icon{margin-top:2px;color:#8a7a9a}.menu-action strong,.menu-action small{display:block}.detail.card-enter{animation:card-enter .16s ease-out}.detail-deck{display:block;color:var(--muted);font-size:11px;margin-bottom:6px}
 @keyframes card-enter{from{opacity:.65}to{opacity:1}}
 @media(max-width:760px){.detail-shell{margin:0 16px}.nav-arrow{position:fixed}.process-popover{max-width:calc(100vw - 24px)}}
 @media(hover:none),(pointer:coarse){.nav-arrow{opacity:1;pointer-events:auto}.list-toggle.is-handle .action-icon{opacity:1;transform:none}}
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
+/* Anki 夜间模式会给 documentElement 挂 night-mode；据此切换整套深色变量。 */
+:root.night-mode{color-scheme:dark;--bg:#17151d;--paper:#211e2a;--ink:#eceaf2;--muted:#a49db8;--line:#37324a;--purple:#a98df7;--soft:#2c2740;--danger:#e78797;--shadow:0 12px 30px #00000066}
+:root.night-mode body{background:linear-gradient(180deg,#1e1b28,#17151d 650px);color:var(--ink)}
+:root.night-mode .app-header{border-bottom-color:var(--line)}
+:root.night-mode .kicker{color:#8f87a8}
+:root.night-mode .btn{background:var(--paper)}
+:root.night-mode .btn:hover{background:#2a2637}
+:root.night-mode .btn.primary{background:linear-gradient(115deg,#7c4cf7,#6a33e8);border-color:#5b2fc9;color:#fff}
+:root.night-mode .settings select,:root.night-mode .settings input{background:var(--paper)}
+:root.night-mode .hero{background:radial-gradient(ellipse at -8% 112%,#4c3a8f73,transparent 34%),radial-gradient(ellipse at 74% -14%,#4a2c4d,transparent 40%),var(--paper)}
+:root.night-mode .hero-side{background:#ffffff0d}
+:root.night-mode .hero-actions{color:var(--muted)}
+:root.night-mode button.bar-row:hover{background:#2c2740}
+:root.night-mode .track{background:#332e45}
+:root.night-mode .candidate{background:var(--paper)}
+:root.night-mode .candidate:hover{border-color:#4a4168}
+:root.night-mode .tile-art{background:linear-gradient(150deg,#262233,#1e1b28 76%);border-bottom-color:#322d44}
+:root.night-mode .tile-art.text-preview{background:linear-gradient(130deg,#ff3f7f14,transparent 45%),linear-gradient(35deg,#7b3ff217,transparent 55%),#241f2e}
+:root.night-mode .text-cover{background:#ffffff14;border-color:#775aa83d;box-shadow:inset 0 1px 0 #ffffff14,0 14px 28px #00000042}
+:root.night-mode .fallback-cover{background:radial-gradient(circle at 28% 22%,#ff3f7f2e,transparent 30%),radial-gradient(circle at 72% 62%,#7b3ff229,transparent 34%),linear-gradient(145deg,#241f2c 0%,#1f1b29 58%,#241c28 100%)}
+:root.night-mode .filter-group{background:#241f33}
+:root.night-mode .filter-group button.active,:root.night-mode .signal-options button.active{background:var(--paper);color:#c3aefc}
+:root.night-mode .mini-card.selected{background:var(--soft)}
+:root.night-mode .mini-card.selected h3{color:#e8e2f4}
+:root.night-mode .detail{background:var(--paper)}
+:root.night-mode .detail-head,:root.night-mode .detail-actions{border-top-color:var(--line)}
+:root.night-mode .evidence{background:#1d1a27}
+:root.night-mode .inspection-heading{background:#17151df2}
+:root.night-mode .concentration-summary{background:var(--paper)}
+:root.night-mode .info-pop{box-shadow:0 18px 45px #00000080}
+:root.night-mode .nav-arrow{background:#26223499;border-color:#3d3752}
+:root.night-mode .nav-arrow:hover,:root.night-mode .nav-arrow:focus-visible{background:linear-gradient(135deg,#2c2740,#241f33)}
+:root.night-mode .process-popover{background:#262234}
+:root.night-mode .menu-action:hover{background:#332d49}
+:root.night-mode .pill{background:#332e45;color:#b3abc4}
+:root.night-mode .message{background:#2c2740;color:#cbbef0}
+:root.night-mode .dialog{background:var(--paper);border-color:#3a3450}
+:root.night-mode .error{background:#3a222b;border-color:#5c3040}
+:root.night-mode .loading,:root.night-mode .empty{border-color:var(--line)}
+:root.night-mode .editing textarea,:root.night-mode .editing input{background:#1a1724;border-color:var(--line);color:var(--ink)}
+:root.night-mode .sort-label select{background:var(--paper);color:var(--ink)}
 </style>
 </head>
 <body><main id="app" class="app"><div class="loading">正在连接 Anki…</div></main>
@@ -134,9 +200,22 @@ function showFatal(message) {
 
 function allRows() {
   if (!state.dashboard) return [];
-  return state.queue === "optimization"
-    ? state.dashboard.optimization_queue
-    : state.dashboard.review_queue;
+  if (state.queue === "optimization")
+    return state.dashboard.optimization_queue;
+  if (state.queue === "concentration")
+    return (state.dashboard.concentration && state.dashboard.concentration.queue) || [];
+  return state.dashboard.review_queue;
+}
+
+function concentrationData() {
+  return (state.dashboard && state.dashboard.concentration) || null;
+}
+
+function queueDefaults(queue) {
+  // 进入“高耗时集中度”时默认展示 ≥30 秒精确集合，并按平均耗时降序。
+  return queue === "concentration"
+    ? {filter: "c30", sort: "avg"}
+    : {filter: "all", sort: state.sort};
 }
 
 function currentRows() {
@@ -146,7 +225,13 @@ function currentRows() {
     if (state.filter === "again") rows = rows.filter(function (row) { return row.again_count >= 3 || (row.again_count >= 2 && row.again_day_count >= 2); });
     if (state.filter === "quality") rows = rows.filter(function (row) { return row.problems.length > 0; });
   }
-  const score = row => state.sort === "slow" ? row.slow_count :
+  if (state.queue === 'concentration') {
+    const concentration = concentrationData() || {};
+    if (state.filter === "c60") rows = rows.filter(function (row) { return (row.avgMs || 0) >= 60000; });
+    if (state.filter === "coutlier") rows = rows.filter(function (row) { return (row.avgMs || 0) >= (concentration.outlierMs || 0); });
+  }
+  const score = row => state.sort === "avg" ? (row.avgMs || 0) :
+    state.sort === "slow" ? row.slow_count :
     state.sort === "again" ? row.again_count : row.total_min_30;
   return rows.slice().sort((a, b) => score(b) - score(a) || b.slow_count - a.slow_count ||
     b.total_min_30 - a.total_min_30 || a.cardId - b.cardId);
@@ -253,23 +338,71 @@ function scope() {
     '<button class="btn quiet" id="refresh" ' + disabled + ">刷新</button></div></section>";
 }
 
+function ratioBars(bars, clickable) {
+  const attr = clickable ? ' data-open-concentration' : '';
+  const row = function (label, pct, fillClass) {
+    const width = Math.max(0, Math.min(100, pct));
+    const open = clickable
+      ? '<button type="button" class="bar-row"' + attr + '>'
+      : '<div class="bar-row">';
+    return open + '<span>' + label + '</span><div class="track"><div class="fill ' + fillClass +
+      '" style="width:' + width + '%"></div></div><strong>' + pct + '%</strong>' +
+      (clickable ? '</button>' : '</div>');
+  };
+  return '<div class="ratio-pair">' +
+    row('卡片占比', bars.cardSharePct, 'cards-fill') +
+    row('耗时占比', bars.timeSharePct, 'time-fill') +
+    '</div>';
+}
+
+function ledgerRow(label, value, note) {
+  return '<div class="ledger-row"><small>' + esc(label) + '</small><b>' + esc(value) + '</b>' +
+    (note ? '<em>' + esc(note) + '</em>' : '') + '</div>';
+}
+
+function noteList(lines) {
+  if (!lines || !lines.length) return "";
+  return '<ul class="info-list">' +
+    lines.map(function (line) { return "<li>" + esc(line) + "</li>"; }).join("") +
+    "</ul>";
+}
+
+function infoControl(key, label, bodyHtml) {
+  // 低调的 ⓘ 说明入口：悬停预览、点击固定、键盘可达（按钮 + Esc 关闭）。
+  if (!bodyHtml) return "";
+  return '<span class="info-wrap"><button type="button" class="info-trigger" data-info="' + esc(key) +
+    '" aria-expanded="false" aria-haspopup="true">ⓘ ' + esc(label) + '</button>' +
+    '<div class="info-pop" data-info-pop="' + esc(key) + '" hidden>' + bodyHtml + "</div></span>";
+}
+
 function overview() {
   const data = state.dashboard;
   if (!data) return state.busy ? '<div class="loading">正在计算真实 Anki 数据…</div>' : '<div class="empty">暂无数据</div>';
   const capacity = data.capacity;
+  const health = capacity.health || {};
+  const hero = data.hero || {};
+  const balance = data.balance || {};
   const rows = data.review_queue.slice(0, 6);
-  return '<section class="briefing"><div class="budget-ticket"><div class="kicker">未来 7 天 · ' +
-    esc(data.selected_deck) + '</div><small>' + esc(capacity.periodStart || '') + ' — ' +
-    esc(capacity.periodEnd || '') + '</small><div class="big-amount"><b>' + capacity.forecast_minutes +
-    '</b><span>/ ' + capacity.weekly_budget_minutes + ' 分钟</span></div><div class="ticket-bottom">' +
-    '<div><small>预算余量</small><strong>' + capacity.headroom_minutes + ' 分钟</strong></div>' +
-    '<div><small>有效复习日</small><strong>' + capacity.active_days + ' 天</strong></div></div></div>' +
-    '<div class="recommendation"><div class="kicker">' + (capacity.simulator_ready ? "FSRS 模拟" : "排程估算") +
-    '</div><h2>' + esc(capacity.decision) + '</h2><p>' + esc(capacity.decision_basis) + " " +
-    esc(capacity.forecast_note) + '</p><button class="btn primary" data-open-cards>检查候选 <span>→</span></button>' +
-    '</div></section><div class="today-line"><span>' + esc(data.conclusion) + '</span><span>今日 ' +
-    data.today.reviews + " 次 · " + data.today.minutes + " 分钟 · 首次学习 " + data.balance.new_today +
-    ' 张</span></div><div class="section-head"><h2>先看这些卡片</h2><small>候选 ' +
+  const cta = hero.ctaTarget === 'concentration'
+    ? '<button class="btn primary" data-open-concentration>' + esc(hero.ctaLabel || '查看高耗时卡片') + ' <span>→</span></button>'
+    : '<button class="btn primary" data-open-cards>' + esc(hero.ctaLabel || '检查候选') + ' <span>→</span></button>';
+  return '<section class="hero">' +
+    '<div class="hero-main">' +
+    '<div class="hero-kicker"><span class="state-tag">' + esc(hero.stateTag || '') + '</span>' +
+    infoControl('forecast', '预测说明', noteList((hero.forecastNote || {}).lines)) + '</div>' +
+    '<h2 class="hero-title">' + esc(hero.headline || '') + '</h2>' +
+    (hero.numbersLine ? '<p class="hero-numbers">' + esc(hero.numbersLine) + '</p>' : '') +
+    (hero.detail ? '<p class="hero-detail">' + esc(hero.detail) + '</p>' : '') +
+    (hero.bars ? ratioBars(hero.bars, true) : '') +
+    '<div class="hero-actions">' + cta + '</div></div>' +
+    '<aside class="hero-side"><h3>预算与新增</h3>' +
+    ledgerRow('复习预算', (capacity.weekly_budget_minutes ?? 0) + ' 分钟', capacity.budgetNote || '') +
+    ledgerRow('新增空间', health.newSpaceValue || '暂无法估算', health.newSpaceNote || '') +
+    '</aside></section>' +
+    '<div class="today-line"><span>本周生成 ' + (balance.generated_7 ?? 0) + ' 张 · 已开始学习 ' +
+    (balance.new_7 ?? 0) + ' 张 · 仍在等待 ' + (balance.waiting_7 ?? 0) + ' 张</span><span>今日 ' +
+    data.today.reviews + " 次 · " + data.today.minutes + " 分钟</span></div>" +
+    '<div class="section-head"><h2>先看这些卡片</h2><small>候选 ' +
     data.candidate_counts.reviewTotal + " 张 · 此处显示 " + rows.length + " 张</small></div>" +
     (rows.length ? '<section class="card-grid">' + rows.map(tile).join("") + "</section>" :
       '<div class="empty">当前范围没有值得检查候选</div>');
@@ -314,18 +447,61 @@ function detailFallbackTitle(row) {
 
 function queueButtons() {
   const counts = state.dashboard ? state.dashboard.candidate_counts : {reviewTotal: 0, optimizationTotal: 0};
+  const concentration = concentrationData();
+  const slowTotal = concentration ? concentration.slowCount : 0;
   return '<button data-queue="review" class="' + (state.queue === "review" ? "active" : "") +
     '">值得检查 ' + counts.reviewTotal + '</button><button data-queue="optimization" class="' +
-    (state.queue === "optimization" ? "active" : "") + '">待优化 ' + counts.optimizationTotal + "</button>";
+    (state.queue === "optimization" ? "active" : "") + '">待优化 ' + counts.optimizationTotal +
+    '</button><button data-queue="concentration" class="' +
+    (state.queue === "concentration" ? "active" : "") + '">高耗时集中度 ' + slowTotal + "</button>";
 }
 
 function filterButtons() {
-  if (state.queue !== 'review') return '<small>按需优化卡片标签显示，包含暂停或忽略的卡片</small>';
+  if (state.queue === 'optimization') return '<small>按需优化卡片标签显示，包含暂停或忽略的卡片</small>';
+  if (state.queue === 'concentration') {
+    const counts = concentrationData() || {};
+    return [["c30", "≥30秒 · " + (counts.slowCount || 0)], ["c60", "≥60秒 · " + (counts.verySlowCount || 0)], ["coutlier", "个人异常 · " + (counts.outlierCount || 0)]]
+      .map(function (item) {
+        return '<button data-filter="' + item[0] + '" class="' + (state.filter === item[0] ? "active" : "") +
+          '">' + item[1] + "</button>";
+      }).join("");
+  }
   return [["all", "全部"], ["slow", "多次慢"], ["again", "多次 Again"], ["quality", "结构疑点"]]
     .map(function (item) {
       return '<button data-filter="' + item[0] + '" class="' + (state.filter === item[0] ? "active" : "") +
         '">' + item[1] + "</button>";
     }).join("");
+}
+
+function concentrationSummary() {
+  if (state.queue !== 'concentration') return "";
+  const concentration = concentrationData();
+  if (!concentration) return "";
+  // 结论句、比例条、卡片列表必须对同一组卡片成立：数字取当前筛选项自己的统计。
+  const filters = concentration.filters || {};
+  const current = filters[state.filter] || {count: 0, cardSharePct: 0, timeSharePct: 0};
+  const sentence = !concentration.cardsAnalyzed
+    ? "当前范围内没有可统计的到期卡片。"
+    : current.count
+      ? "这 " + current.count + " 张卡，占到期卡片的 " + current.cardSharePct +
+        "%，占估算复习耗时的 " + current.timeSharePct + "%。"
+      : "当前筛选没有卡片。";
+  return '<section class="concentration-summary">' +
+    '<div class="summary-main"><p class="summary-line">' + esc(sentence) + '</p>' +
+    (concentration.scopeNote ? '<small class="summary-scope">' + esc(concentration.scopeNote) + '</small>' : '') +
+    ratioBars({cardSharePct: current.cardSharePct, timeSharePct: current.timeSharePct}, false) +
+    '</div>' +
+    infoControl('concentration-stats', '统计说明', noteList(concentration.statNotes || [])) +
+    '</section>';
+}
+
+function miniCardEvidence(row) {
+  if (state.queue === 'concentration') {
+    const concentration = concentrationData() || {};
+    const overOutlier = (row.avgMs || 0) >= (concentration.outlierMs || 0);
+    return ['平均 ' + row.avg_s + ' 秒' + (overOutlier ? ' · 超个人异常线' : '')];
+  }
+  return row.reasons.concat(row.limitations || []);
 }
 
 function inspection() {
@@ -338,7 +514,7 @@ function inspection() {
     const selectedRow = rows.find(function (row) { return row.cardId === state.selected; }) || rows[0];
     if (state.selected !== selectedRow.cardId) state.selected = selectedRow.cardId;
     const list = '<aside id="inspection-list" class="inspection-list" ' + (state.collapsed ? 'hidden' : '') + '>' + rows.map(function (row) {
-      const evidence = row.reasons.concat(row.limitations || []);
+      const evidence = miniCardEvidence(row);
       return '<button class="mini-card ' + (row.cardId === selectedRow.cardId ? "selected" : "") +
         '" data-card="' + row.cardId + '" ' + (state.editing ? "disabled" : "") + '><h3>' +
         esc(row.summary) + '</h3><div class="mini-meta">' + esc(evidence.join(" · ")) + "</div></button>";
@@ -348,11 +524,13 @@ function inspection() {
       (state.collapsed ? "展开列表" : "收起列表") + '">' + icon(state.collapsed ? 'sidebar' : 'left') + "</button>" +
       detailArea(selectedRow, rows) + "</div></section>" + dialogs();
   }
+  const totalLabel = state.queue === 'concentration' ? '高耗时' : '候选';
   return '<div class="inspection-heading"><div class="filter-group">' + queueButtons() +
     '</div><div class="signal-options">' + filterButtons() + '</div><label class="sort-label">排序<select id="sort">' +
-    [['recent', '近 30 天耗时'], ['slow', '慢次数'], ['again', 'Again 次数']].map(([key, label]) =>
+    [['avg', '平均耗时'], ['recent', '近 30 天耗时'], ['slow', '慢次数'], ['again', 'Again 次数']].map(([key, label]) =>
       '<option value="' + key + '" ' + (state.sort === key ? 'selected' : '') + '>' + label + '</option>').join('') +
-    '</select></label><span class="filter-count">候选 ' + total + ' 张 · 筛选 ' + rows.length + ' 张 · 显示 ' + rows.length + " 张</span></div>" +
+    '</select></label><span class="filter-count">' + totalLabel + ' ' + total + ' 张 · 筛选 ' + rows.length + ' 张 · 显示 ' + rows.length + " 张</span></div>" +
+    concentrationSummary() +
     (state.message ? '<div class="message">' + esc(state.message) + "</div>" : "") + body;
 }
 
@@ -515,6 +693,56 @@ function bindProcessMenu() {
   });
 }
 
+let openInfoButton = null;
+
+function closeInfo(focus) {
+  if (!openInfoButton) return;
+  const button = openInfoButton;
+  openInfoButton = null;
+  button.dataset.pinned = "0";
+  button.setAttribute("aria-expanded", "false");
+  const pop = button.parentElement?.querySelector("[data-info-pop]");
+  if (pop) pop.hidden = true;
+  if (focus) button.focus({preventScroll: true});
+}
+
+function bindInfoControls() {
+  root.querySelectorAll(".info-trigger").forEach(button => {
+    const wrap = button.parentElement;
+    const pop = wrap.querySelector("[data-info-pop]");
+    let hoverTimer = 0;
+    const pinned = () => button.dataset.pinned === "1";
+    const setOpen = open => {
+      pop.hidden = !open;
+      button.setAttribute("aria-expanded", String(open));
+    };
+    button.addEventListener("click", event => {
+      event.stopPropagation();
+      const wasPinned = pinned();
+      closeInfo();
+      if (!wasPinned) {
+        button.dataset.pinned = "1";
+        openInfoButton = button;
+        setOpen(true);
+      }
+    });
+    wrap.addEventListener("mouseenter", () => {
+      hoverTimer = setTimeout(() => { if (!pinned()) setOpen(true); }, 120);
+    });
+    wrap.addEventListener("mouseleave", () => {
+      clearTimeout(hoverTimer);
+      if (!pinned()) setOpen(false);
+    });
+    button.addEventListener("blur", () => { if (!pinned()) setOpen(false); });
+    button.addEventListener("keydown", event => {
+      if (event.key === "Escape" && pinned()) {
+        event.stopPropagation();
+        closeInfo(true);
+      }
+    });
+  });
+}
+
 function detailArea(row, rows) {
   const detail = state.detail;
   if (!detail || detail.cardId !== row.cardId) {
@@ -533,7 +761,13 @@ function detailArea(row, rows) {
       '><summary>查看完整答案</summary>' + cardFrame(detail.answerHtml, "答案", detail.cardCss) + "</details>") +
     '</div><div class="evidence"><div><small>最近 ' + row.recent_reviews.length +
     ' 次（旧→新）</small><strong class="review-events">' + formatReviewEvents(row.recent_reviews) +
-    '</strong></div><div><small>≥40 秒 / Again</small><strong>' + row.slow_count + " / " +
+    '</strong></div>' +
+    (state.queue === 'concentration'
+      ? '<div><small>平均耗时</small><strong>' + row.avg_s + ' 秒' +
+        ((row.avgMs || 0) >= ((concentrationData() || {}).outlierMs || 0) ? ' · 超个人异常线' : '') +
+        '</strong></div>'
+      : '') +
+    '<div><small>≥40 秒 / Again</small><strong>' + row.slow_count + " / " +
     row.again_count + ' 次</strong></div><div><small>近 30 天累计</small><strong>' +
     row.total_min_30 + ' 分钟</strong></div><div><small>结构疑点</small><strong>' +
     esc(row.problems.join(" · ") || "无自动结论") + "</strong>" +
@@ -743,6 +977,7 @@ function render() {
   contentObservers.forEach(observer => observer.disconnect());
   contentObservers = [];
   cardFrameResizers = [];
+  openInfoButton = null;
   root.className = "app";
   if (!state.init) {
     root.innerHTML = '<div class="loading">正在连接 Anki…</div>';
@@ -760,6 +995,7 @@ function render() {
   bind();
   bindCardFrames();
   bindProcessMenu();
+  bindInfoControls();
   queueLayout();
 }
 
@@ -781,6 +1017,17 @@ function bind() {
       state.selected = currentRows()[0]?.cardId ?? null;
       render();
       if (state.selected !== null) loadCard(state.selected, {reveal: true});
+    });
+  });
+  root.querySelectorAll("[data-open-concentration]").forEach(function (element) {
+    element.addEventListener("click", function () {
+      requestChange(() => {
+        state.view = "cards"; state.queue = 'concentration';
+        Object.assign(state, queueDefaults('concentration'));
+        state.selected = currentRows()[0]?.cardId ?? null;
+        render();
+        if (state.selected !== null) loadCard(state.selected, {reveal: true});
+      });
     });
   });
   const refresh = root.querySelector("#refresh");
@@ -815,7 +1062,7 @@ function bind() {
     button.addEventListener("click", function () {
       requestChange(function () {
         state.queue = button.dataset.queue;
-        state.filter = "all";
+        Object.assign(state, queueDefaults(state.queue));
         state.selected = currentRows()[0] ? currentRows()[0].cardId : null;
         state.detail = null;
         state.answerOpen = false;
@@ -1000,7 +1247,7 @@ document.addEventListener("keydown", function (event) {
 root.addEventListener('keydown', event => {
   if (event.key !== 'Escape') return;
   const dialog = root.querySelector('dialog[open]');
-  if (!dialog) return;
+  if (!dialog) { closeInfo(); return; }
   event.preventDefault(); event.stopPropagation();
   if (dialog.id === 'unsaved') pendingAction = null;
   dialog.close();
@@ -1011,6 +1258,7 @@ document.addEventListener("pointerdown", function (event) {
   document.querySelectorAll(".process-menu[open]").forEach(function (menu) {
     if (!menu.contains(event.target)) closeProcessMenu();
   });
+  if (openInfoButton && !event.target.closest(".info-wrap")) closeInfo();
 });
 
 window.addEventListener('resize', () => {

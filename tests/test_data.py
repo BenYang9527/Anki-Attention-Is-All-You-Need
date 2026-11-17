@@ -146,6 +146,21 @@ class AnkiDataConfigTest(unittest.TestCase):
         self.assertEqual(cfg["dailyBudgetMinutes"], 30)
         self.assertEqual(cfg["managedDecks"], [])
 
+    def test_config_survives_garbage_values(self) -> None:
+        # config() 本身不抛异常：坏值回退默认，交给业务层继续防御。
+        # weeklyNewTarget 已废弃不再读取——存量配置里的任何值都不会被
+        # 当成用户明确选择。1e309 解析成 inf，int(inf) 抛 OverflowError，
+        # 同样回退默认而不是崩溃。
+        data = make_data(addon_config={
+            "simulationDays": float("inf"),
+            "dailyBudgetMinutes": None,
+            "weeklyNewTarget": [],
+        })
+        cfg = data.config()
+        self.assertEqual(cfg["simulationDays"], 90)
+        self.assertEqual(cfg["dailyBudgetMinutes"], 30)
+        self.assertNotIn("weeklyNewTarget", cfg)
+
 
 class AnkiDataCardInfosTest(unittest.TestCase):
     def test_builds_field_map_and_deck_tags(self) -> None:
@@ -201,14 +216,64 @@ class AnkiDataReviewsTest(unittest.TestCase):
         self.assertEqual(data._col.db.queries, [])
 
 
-class AnkiDataSimulateTest(unittest.TestCase):
-    def test_raises_value_error_for_unknown_deck(self) -> None:
-        data = make_data(deck_names=("A",), fsrs_config={})
-        with self.assertRaises(ValueError) as ctx:
-            data.simulate_fsrs("不存在", additional_new=0, days=30, new_limit=0)
-        self.assertIn("牌组不存在", str(ctx.exception))
+class AnkiDataSimulationGroupsTest(unittest.TestCase):
+    def make_grouped_data(self, names, configs_by_name):
+        decks = FakeDecks(list(names))
+        ids = {name: decks.id_for_name(name) for name in names}
+        decks._config = {ids[name]: config for name, config in configs_by_name.items()}
+        decks._config_name_by_did = {ids[name]: name for name in names}
+        col = FakeCollection(decks, {})
+        return data_mod.AnkiData(col, {})
 
-    def test_missing_params_reach_backend_as_defaults(self) -> None:
+    def test_groups_subtree_by_preset(self):
+        # 父牌组与子牌组使用不同预设：选父牌组时按预设分组，而不是把
+        # 整棵子树都按父牌组参数模拟（预设混合是真实场景，Anki 的
+        # config_dict_for_deck_id 按牌组返回各自预设）。
+        data = self.make_grouped_data(
+            ["A", "A::B", "A::C", "D"],
+            {
+                "A": {"id": 1, "name": "父预设", "desiredRetention": 0.9},
+                "A::B": {"id": 2, "name": "子预设", "desiredRetention": 0.95,
+                         "easyDaysPercentages": [1, 1, 1, 1, 1, 0, 0]},
+                "A::C": {"id": 1, "name": "父预设", "desiredRetention": 0.9},
+                "D": {"id": 3, "name": "其他", "desiredRetention": 0.9},
+            },
+        )
+        groups = data.simulation_groups("A", [])
+        self.assertEqual([group["decks"] for group in groups], [["A", "A::C"], ["A::B"]])
+        self.assertEqual(groups[0]["config"]["id"], 1)
+        self.assertEqual(groups[1]["config"]["id"], 2)
+        self.assertEqual(groups[1]["easyDays"], [1, 1, 1, 1, 1, 0, 0])
+        # 共享预设的牌组只带一份配置。
+        self.assertEqual(groups[0]["config"]["desiredRetention"], 0.9)
+
+    def test_scope_without_selection_covers_all_decks(self):
+        data = self.make_grouped_data(
+            ["A", "A::B", "C"],
+            {"A": {"id": 1}, "A::B": {"id": 1}, "C": {"id": 2}},
+        )
+        groups = data.simulation_groups("", [])
+        covered = sorted(deck for group in groups for deck in group["decks"])
+        self.assertEqual(covered, ["A", "A::B", "C"])  # 每张卡恰好属于一个模拟单元
+
+    def test_managed_decks_scope_uses_subtrees(self):
+        data = self.make_grouped_data(
+            ["A", "A::B", "C"],
+            {"A": {"id": 1}, "A::B": {"id": 1}, "C": {"id": 2}},
+        )
+        groups = data.simulation_groups("", ["A"])
+        covered = sorted(deck for group in groups for deck in group["decks"])
+        self.assertEqual(covered, ["A", "A::B"])
+
+    def test_unknown_decks_are_skipped(self):
+        data = self.make_grouped_data(["A"], {"A": {"id": 1}})
+        self.assertEqual(
+            [group["decks"] for group in data.simulation_groups("不存在", [])], []
+        )
+
+
+class AnkiDataSimulateGroupTest(unittest.TestCase):
+    def test_passes_preset_config_and_group_search_to_backend(self):
         data = make_data(deck_names=("A",))
         runner = Mock(return_value=SimpleNamespace(
             daily_review_count=[2], daily_new_count=[0], daily_time_cost=[15.0]
@@ -216,13 +281,27 @@ class AnkiDataSimulateTest(unittest.TestCase):
         data._col._backend.simulate_fsrs_review = runner
         # Replace only protobuf construction; exercise data -> adapter -> backend.
         with patch.object(_fsrs, "_new_request", side_effect=lambda params: params):
-            result = data.simulate_fsrs("A", additional_new=0, days=30, new_limit=0)
-        self.assertEqual(runner.call_args.args[0]["params"], [])
+            result = data.simulate_group(
+                {
+                    "decks": ["A", "A::B"],
+                    "config": {"desiredRetention": 0.95, "rev": {}, "new": {}, "lapse": {}},
+                    "easyDays": [1.0] * 7,
+                },
+                additional_new=0,
+                days=30,
+                new_limit=0,
+            )
+        request = runner.call_args.args[0]
+        self.assertEqual(request["params"], [])
+        self.assertEqual(request["desired_retention"], 0.95)
+        # 组内每个牌组用精确搜索，互不重叠。
+        self.assertIn('(deck:"A" -deck:"A::*")', request["search"])
+        self.assertIn('(deck:"A::B" -deck:"A::B::*")', request["search"])
         self.assertEqual(result, {
             "dailyReviewCount": [2], "dailyNewCount": [0], "dailyTimeCost": [15.0]
         })
 
-    def test_degrades_to_runtime_error_when_protobuf_unavailable(self) -> None:
+    def test_degrades_to_runtime_error_when_protobuf_unavailable(self):
         # FSRS params present + backend exposes the method, but the generated
         # protobuf module is not importable (older/incompatible Anki) -> the
         # adapter converts the ImportError into an explicit degradation.
@@ -232,8 +311,9 @@ class AnkiDataSimulateTest(unittest.TestCase):
         decks._config_name_by_did = {deck_id: "A"}
         col = FakeCollection(decks, {}, {}, {})
         data = data_mod.AnkiData(col, {"managedDecks": ["A"]})
+        group = {"decks": ["A"], "config": decks._config[deck_id], "easyDays": [1.0] * 7}
         with self.assertRaises(RuntimeError) as ctx:
-            data.simulate_fsrs("A", additional_new=0, days=30, new_limit=0)
+            data.simulate_group(group, additional_new=0, days=30, new_limit=0)
         self.assertIn("降级", str(ctx.exception))
 
 

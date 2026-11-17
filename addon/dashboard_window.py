@@ -154,7 +154,7 @@ class DashboardWindow(QDialog):
                 forecastMinutes=capacity["forecast_minutes"],
                 budgetMinutes=capacity["weekly_budget_minutes"],
                 headroomMinutes=capacity["headroom_minutes"],
-                newAllowance=capacity["recommended_new"],
+                newAllowance=capacity["health"].get("weeklyNew"),
             )
             return result
 

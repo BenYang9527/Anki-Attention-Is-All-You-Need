@@ -28,6 +28,20 @@ def chunks(items: list[int], size: int) -> list[list[int]]:
     return [items[i : i + size] for i in range(0, len(items), size)]
 
 
+def _config_int(config: dict[str, Any], key: str, default: int) -> int:
+    """安全读取整数配置：坏值回退默认值，保证 ``config()`` 不抛异常。
+
+    OverflowError 一并捕获：JSON 里的 1e309 会解析成 inf，
+    ``int(inf)`` 抛的是 OverflowError 而不是 ValueError。与
+    ``attention_dashboard._config_int`` 成对存在——业务层对注入源
+    做同样的防御，两层职责见各自注释。
+    """
+    try:
+        return int(config.get(key, default))
+    except (TypeError, ValueError, OverflowError):
+        return default
+
+
 class AttentionData(Protocol):
     def deck_refs(self) -> list[dict[str, Any]]: ...
     def current_deck_id(self) -> int | None: ...
@@ -36,10 +50,10 @@ class AttentionData(Protocol):
     def find_cards(self, query: str) -> list[int]: ...
     def card_infos(self, card_ids: list[int]) -> dict[int, dict[str, Any]]: ...
     def reviews_of_cards(self, card_ids: list[int]) -> dict[int, list[dict[str, Any]]]: ...
-    def simulate_fsrs(
-        self, deck: str, additional_new: int, days: int, new_limit: int
+    def simulation_groups(self, deck: str, managed_decks: list[str]) -> list[dict[str, Any]]: ...
+    def simulate_group(
+        self, group: dict[str, Any], additional_new: int, days: int, new_limit: int
     ) -> dict[str, Any]: ...
-    def easy_days_percentages(self, deck: str) -> list[float]: ...
     def config(self) -> dict[str, Any]: ...
 
 
@@ -152,28 +166,55 @@ class AnkiData:
                 )
         return result
 
-    def simulate_fsrs(
-        self, deck: str, additional_new: int, days: int, new_limit: int
-    ) -> dict[str, Any]:
-        deck_id = self._col.decks.id_for_name(deck)
-        if deck_id is None:
-            raise ValueError(f"牌组不存在：{deck}")
-        config = self._col.decks.config_dict_for_deck_id(deck_id)
-        return _fsrs.simulate(self._col, config, deck, additional_new, days, new_limit)
+    def simulation_groups(self, deck: str, managed_decks: list[str]) -> list[dict[str, Any]]:
+        """按牌组预设（deck config）划分的模拟单元。
 
-    def easy_days_percentages(self, deck: str) -> list[float]:
-        """Per-weekday review-load percentages for a deck (Anki native FSRS
-        Easy Days). Rest days are 0.0; absent -> full load every day.
-
-        This is the single shared source of truth both FSRS Helper and the
-        FSRS simulator read, so the budget side can use it too without any
-        coupling to FSRS Helper's private config.
+        父牌组的搜索虽然覆盖子树卡片，但每张卡的复习参数取决于它所属
+        牌组的预设（已实测：``config_dict_for_deck_id`` 按牌组返回各自
+        预设）。把整棵子树按父牌组参数模拟会失真，因此这里把范围内的
+        牌组按预设分组，每组带自己的配置与休息日；组内搜索由
+        :func:`fsrs_adapter.group_search` 保证互不重叠、合起来覆盖全部
+        卡片。范围：选中牌组的子树 > 管理牌组的子树 > 全部牌组。
         """
-        deck_id = self._col.decks.id_for_name(deck)
-        if deck_id is None:
-            return [1.0] * 7
-        config = self._col.decks.config_dict_for_deck_id(deck_id)
-        return list(config.get("easyDaysPercentages") or [1.0] * 7)
+        names = [item.name for item in self._col.decks.all_names_and_ids()]
+        if deck:
+            scope = [deck] + [n for n in names if n.startswith(deck + "::")]
+        elif managed_decks:
+            scope: list[str] = []
+            for root in managed_decks:
+                if root not in names:
+                    continue
+                scope.append(root)
+                scope.extend(n for n in names if n.startswith(root + "::"))
+            scope = list(dict.fromkeys(scope))
+        else:
+            scope = list(names)
+        groups: dict[Any, dict[str, Any]] = {}
+        for name in scope:
+            deck_id = self._col.decks.id_for_name(name)
+            if deck_id is None:
+                continue
+            config = self._col.decks.config_dict_for_deck_id(deck_id)
+            key = config.get("id", name)
+            group = groups.setdefault(
+                key,
+                {
+                    "decks": [],
+                    "config": config,
+                    "easyDays": list(
+                        config.get("easyDaysPercentages") or [1.0] * 7
+                    ),
+                },
+            )
+            group["decks"].append(name)
+        return sorted(groups.values(), key=lambda group: group["decks"][0])
+
+    def simulate_group(
+        self, group: dict[str, Any], additional_new: int, days: int, new_limit: int
+    ) -> dict[str, Any]:
+        return _fsrs.simulate(
+            self._col, group["config"], group["decks"], additional_new, days, new_limit
+        )
 
     def config(self) -> dict[str, Any]:
         available = (
@@ -184,6 +225,6 @@ class AnkiData:
         configured = self._addon_config.get("managedDecks") or []
         return {
             "managedDecks": [name for name in configured if name in available],
-            "simulationDays": int(self._addon_config.get("simulationDays", 90)),
-            "dailyBudgetMinutes": int(self._addon_config.get("dailyBudgetMinutes", 30)),
+            "simulationDays": _config_int(self._addon_config, "simulationDays", 90),
+            "dailyBudgetMinutes": _config_int(self._addon_config, "dailyBudgetMinutes", 30),
         }

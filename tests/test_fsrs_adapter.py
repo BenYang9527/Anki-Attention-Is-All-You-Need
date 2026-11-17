@@ -46,7 +46,7 @@ class FsrsParamsTest(unittest.TestCase):
     def test_empty_or_missing_weights_use_backend_defaults(self) -> None:
         for config in ({}, deck_config(fsrsParams6=[], fsrsParams5=[], fsrsWeights=[])):
             with self.subTest(config=config):
-                params = fsrs.build_request_params(config, "系统默认", 0, 90, 0)
+                params = fsrs.build_request_params(config, ["系统默认"], 0, 90, 0)
                 self.assertEqual(params["params"], [])
 
 
@@ -56,7 +56,7 @@ class SimulateFailureTest(unittest.TestCase):
             simulate_fsrs_review=Mock(side_effect=Exception(message))
         ))
         with patch.object(fsrs, "_new_request", side_effect=lambda params: params):
-            return fsrs.simulate(collection, {}, "Empty", additional_new, 7, new_limit)
+            return fsrs.simulate(collection, {}, ["Empty"], additional_new, 7, new_limit)
 
     def test_empty_baseline_is_zero_workload(self):
         self.assertEqual(self.run_failure("no cards to simulate"), {
@@ -73,12 +73,21 @@ class SimulateFailureTest(unittest.TestCase):
         with self.assertRaisesRegex(RuntimeError, "no cards to simulate"):
             self.run_failure("no cards to simulate", additional_new=7, new_limit=1)
 
+    def test_protobuf_range_error_degrades_to_runtime_error(self):
+        # 10**12 天超出 protobuf int32 范围；适配器必须把它转成可降级的
+        # RuntimeError，而不是让原始 ValueError 穿透到看板。
+        collection = SimpleNamespace(_backend=SimpleNamespace(
+            simulate_fsrs_review=Mock(side_effect=lambda request: request)
+        ))
+        with self.assertRaisesRegex(RuntimeError, "已降级为排程估算"):
+            fsrs.simulate(collection, {}, ["A"], 0, 10 ** 12, 0)
+
 
 class BuildRequestParamsTest(unittest.TestCase):
     def test_returns_all_fields_with_defaults_applied(self) -> None:
         params = fsrs.build_request_params(
             deck_config(),
-            deck="MyDeck",
+            decks=["MyDeck"],
             additional_new=50,
             days=90,
             new_limit=7,
@@ -90,7 +99,10 @@ class BuildRequestParamsTest(unittest.TestCase):
         self.assertEqual(params["new_limit"], 7)
         self.assertEqual(params["review_limit"], 200)
         self.assertEqual(params["max_interval"], 36500)
-        self.assertEqual(params["search"], 'deck:"MyDeck" -is:suspended -is:new')
+        self.assertEqual(
+            params["search"],
+            '((deck:"MyDeck" -deck:"MyDeck::*")) -is:suspended -is:new',
+        )
         self.assertFalse(params["new_cards_ignore_review_limit"])
         self.assertEqual(params["easy_days_percentages"], [1.0] * 7)
         self.assertEqual(params["review_order"], 0)
@@ -102,7 +114,7 @@ class BuildRequestParamsTest(unittest.TestCase):
     def test_clamps_non_positive_inputs(self) -> None:
         params = fsrs.build_request_params(
             deck_config(),
-            deck="D",
+            decks=["D"],
             additional_new=-5,
             days=0,
             new_limit=-3,
@@ -114,7 +126,7 @@ class BuildRequestParamsTest(unittest.TestCase):
     def test_includes_suspend_count_when_leech_action_is_suspend(self) -> None:
         params = fsrs.build_request_params(
             deck_config(lapse={"delays": [10], "leechAction": 0, "leechFails": 6}),
-            deck="D",
+            decks=["D"],
             additional_new=0,
             days=30,
             new_limit=0,
@@ -124,7 +136,7 @@ class BuildRequestParamsTest(unittest.TestCase):
     def test_uses_default_easy_days_when_missing(self) -> None:
         params = fsrs.build_request_params(
             deck_config(easyDaysPercentages=None),
-            deck="D",
+            decks=["D"],
             additional_new=0,
             days=30,
             new_limit=0,
@@ -136,14 +148,31 @@ class BuildRequestParamsTest(unittest.TestCase):
         # in attention_dashboard._escape_deck; otherwise FSRS gets a broken search.
         params = fsrs.build_request_params(
             deck_config(),
-            deck='My "Deck" \\ X',
+            decks=['My "Deck" \\ X'],
             additional_new=0,
             days=30,
             new_limit=0,
         )
         self.assertEqual(
             params["search"],
-            'deck:"My \\"Deck\\" \\\\ X" -is:suspended -is:new',
+            '((deck:"My \\"Deck\\" \\\\ X" -deck:"My \\"Deck\\" \\\\ X::*"))'
+            " -is:suspended -is:new",
+        )
+
+    def test_group_search_covers_each_deck_exactly_once(self) -> None:
+        # 同一预设组的多个牌组：每个牌组用精确形式（排除自己的子牌组），
+        # 组间搜索互不重叠——父组不会把子预设组的卡片再算一遍。
+        params = fsrs.build_request_params(
+            deck_config(),
+            decks=["A", "A::B", "C"],
+            additional_new=0,
+            days=30,
+            new_limit=0,
+        )
+        self.assertEqual(
+            params["search"],
+            '((deck:"A" -deck:"A::*") or (deck:"A::B" -deck:"A::B::*")'
+            ' or (deck:"C" -deck:"C::*")) -is:suspended -is:new',
         )
 
 
